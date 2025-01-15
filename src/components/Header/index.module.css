@@ -1,0 +1,18 @@
+.mainHeader{
+    background-color: green;
+}
+
+.navHeader {
+    display: flex;
+    align-items: center;
+    color: white;
+    padding: 0 10px;
+}
+
+
+.navHeader a {
+    padding: 10px 20px;
+}
+.navHeader a:last-child {
+    margin-left: auto;
+}
