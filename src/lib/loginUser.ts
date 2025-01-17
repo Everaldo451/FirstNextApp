@@ -1,6 +1,6 @@
 import { prisma } from "./db"
 import { User } from "@prisma/client"
-import { hashData } from "./encryptData"
+import { hashData, validateHash } from "./encryptData"
 
 export default async function loginUser(email:string, password:string):Promise<User|null> {
     const user = await prisma.user.findFirst({
@@ -12,9 +12,7 @@ export default async function loginUser(email:string, password:string):Promise<U
     })
 
     if (!user) {return null}
-
-    const hashedPassword = hashData(password)
-    if (user.password == hashedPassword) {return user}
+    if (validateHash(password, user.password)) {return user}
     
     return null
 }

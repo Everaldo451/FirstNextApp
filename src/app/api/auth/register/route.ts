@@ -1,38 +1,57 @@
-import { NextRequest, NextResponse } from "next/server";
-import { User } from "@prisma/client";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashData } from "@/lib/encryptData";
 import { validateDate, numberToDate } from "@/lib/parseDate";
+import { cookies } from "next/headers";
+import Joi from "joi";
 import createJsonResponse from "@/lib/createResponse";
+import JWT from "@/services/JWTService";
 
-export default async function POST(request:NextRequest){
-    const {name, password, email, birthday} = await request.json()
+const schema = Joi.object({
+    name: Joi.string(),
+    email: Joi.string(),
+    password: Joi.string(),
+    birthday: Joi.string()
+})
 
-    if (!name || !password || !email || !birthday) {
-        return createJsonResponse("Invalid credentials.",400)
+export async function POST(request:NextRequest){
+    const formData = await request.formData()
+
+    const data = {
+        email: formData.get("email"),
+        name: formData.get("name"),
+        password: formData.get("password"),
+        birthday: formData.get("birthday")
     }
-    const [validDate, date] = validateDate(birthday)
+    const {value, error} = schema.validate(data)
+    if (error) {return createJsonResponse("Invalid credentials.",400)}
 
-    if (!validDate) {
-        return createJsonResponse("Invalid birthday.",400)
-    }
+    const [validDate, date] = validateDate(value.birthday)
+    if (!validDate) {return createJsonResponse("Invalid birthday.",400)}
 
     const dateOfBirthday = numberToDate(date)
 
     try {
-        const hashedPassword = hashData(password)
+        const hashedPassword = hashData(value.password)
 
-        await prisma.user.create({
+        const user = await prisma.user.create({
             data: {
-                email: email,
+                email: value.email,
                 password: hashedPassword,
-                name: name,
+                name: value.name,
                 birthday: dateOfBirthday
             }
         })
 
+        const cookieStore = await cookies()
+        JWT.setAccessCookie(user.id, cookieStore)
+        JWT.setRefreshCookie(user.id, cookieStore)
+        JWT.setCSRFCookie(
+            JWT.createCSRFToken(),
+            cookieStore
+        )
         return createJsonResponse("User created successfull.", 200)
     }catch(error) {
-        return createJsonResponse("Internal server Error.",500)
+        return createJsonResponse("Internal server error.",500)
     }
 }

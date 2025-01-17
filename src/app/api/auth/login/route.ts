@@ -1,27 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { hashData } from "@/lib/encryptData";
 import { cookies } from "next/headers";
+import Joi from "joi";
 import createJsonResponse from "@/lib/createResponse";
+import JWT from "@/services/JWTService";
 import loginUser from "@/lib/loginUser";
-import jwtServiceInstance from "@/lib/jwtService";
 
-export default async function POST(request:NextRequest){
-    const {password, email} = await request.json()
+const schema = Joi.object({
+    name: Joi.string(),
+    email: Joi.string(),
+    password: Joi.string(),
+    birthday: Joi.string()
+})
 
-    if (!password || !email) {
-        return createJsonResponse("Invalid credentials.",400)
+export async function POST(request:NextRequest){
+    const contentType = request.headers.get("Content-type")
+    console.log(contentType)
+    const formData = await request.formData()
+
+    const data = {
+        email: formData.get("email"),
+        password: formData.get("password"),
     }
 
+    const {value, error} = schema.validate(data)
+    if (error) {return createJsonResponse("Invalid credentials.",400)}
+
     try {
-        const user = await loginUser(email, password)
+        const user = await loginUser(value.email, value.password)
         if (!user) {
             return createJsonResponse("Login unauthorized.", 401)
         }
 
         const cookieStore = await cookies()
-        jwtServiceInstance.setAccessCookie(user.id, cookieStore)
-        jwtServiceInstance.setRefreshCookie(user.id, cookieStore)
+        JWT.setAccessCookie(user.id, cookieStore)
+        JWT.setRefreshCookie(user.id, cookieStore)
+        JWT.setCSRFCookie(
+            JWT.createCSRFToken(),
+            cookieStore
+        )
         
         return createJsonResponse("User login did successfull.",200)
     }catch(error) {
