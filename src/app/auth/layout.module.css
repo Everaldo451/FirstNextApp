@@ -1,0 +1,16 @@
+.sectionMain {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    grid-auto-rows: auto;
+}
+
+.sectionMain :not(input) {
+    color: white;
+}
+
+.Div {
+    display: flex;
+    flex-direction: column;
+}

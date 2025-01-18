@@ -6,7 +6,7 @@ export default function Header() {
         <header className={styles.mainHeader}>
             <nav className={styles.navHeader}>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/auth/login"}>Login</Link>
+                <Link href={"/auth/signin"}>Login</Link>
             </nav>
         </header>
     )

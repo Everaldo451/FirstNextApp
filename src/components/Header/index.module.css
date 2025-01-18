@@ -1,5 +1,6 @@
 .mainHeader{
-    background-color: green;
+    background-color: var(--headerBlue);
+    font-family: var(--headerFontFamily);
 }
 
 .navHeader {
@@ -9,9 +10,10 @@
     padding: 0 10px;
 }
 
-
 .navHeader a {
     padding: 10px 20px;
+    color: white;
+    text-decoration: none;
 }
 .navHeader a:last-child {
     margin-left: auto;

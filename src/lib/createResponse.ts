@@ -7,6 +7,7 @@ export default function createJsonResponse(message:string, status:number, adicio
     return new Response(JSON.stringify(jsonData),{
         headers: {
             'Content-Type':'application/json'
-        }
+        },
+        status:status
     })
 }

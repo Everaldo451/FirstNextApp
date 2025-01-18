@@ -39,7 +39,9 @@ export async function POST(request:NextRequest){
             cookieStore
         )
         
-        return createJsonResponse("User login did successfull.",200)
+        return createJsonResponse("User login did successfull.",200,{
+            user: {name: user.name, email: user.email}
+        })
     }catch(error) {
         return createJsonResponse("Internal server Error.",500)
     }

@@ -50,7 +50,9 @@ export async function POST(request:NextRequest){
             JWT.createCSRFToken(),
             cookieStore
         )
-        return createJsonResponse("User created successfull.", 200)
+        return createJsonResponse("User created successfull.", 200,{
+            user: {name: user.name, email: user.email}
+        })
     }catch(error) {
         return createJsonResponse("Internal server error.",500)
     }

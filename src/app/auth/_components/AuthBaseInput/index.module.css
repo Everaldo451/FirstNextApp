@@ -1,0 +1,39 @@
+div.Input {
+    --font-size: 15px;
+    position: relative;
+}
+
+div.Input:nth-child(n+2) {
+    margin-top: calc(2 * var(--font-size));
+}
+
+input.Input {
+    padding: 10px;
+    font-size: var(--font-size);
+}
+
+label.common {
+    position: absolute;
+    color: grey;
+    transition: all 0.5s;
+}
+
+label.common:hover {
+    cursor: text;
+    font-size: var(--font-size)
+}
+
+label.noFocus {
+    left: 10px;
+    top: 50%;
+    transform: translate(0,-50%);
+    font-size: var(--font-size)
+}
+
+label.inFocus {
+    left: 0;
+    top:calc(-1 * var(--font-size) - 4px);
+    font-size: calc(var(--font-size) - 1px);
+    transform: none;
+}
+

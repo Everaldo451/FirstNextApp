@@ -1,5 +1,7 @@
 .mainFooter {
     padding: 20px;
-    background-color: var(--foreground);
-    color: var(--background);
+    background-color: var(--headerBlue);
+    margin-top: auto;
+    color: white;
+    font-family: var(--headerFontFamily);
 }

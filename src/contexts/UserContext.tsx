@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, SetStateAction } from "react";
 import { UserType } from "@/types/UserType";
 
