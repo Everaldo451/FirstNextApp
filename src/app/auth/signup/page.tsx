@@ -22,7 +22,7 @@ export default function RegisterRoute() {
             <AuthBaseForm url={"/api/auth/login"} afterResponse={afterResponse} redirectUrl={"/"}>
                 <legend>Sign up</legend>
                 <AuthBaseInput name="name" placeholder="Digite seu nome"/>
-                <AuthBaseInput name="email" placeholder="Digite seu email"/>
+                <AuthBaseInput name="email" type="email" placeholder="Digite seu email"/>
                 <AuthBaseInput name="password" type="password" placeholder="Digite sua senha"/>
             </AuthBaseForm>
             <AnotherLink value={"Sign in"} url={"/auth/signin"}/>

@@ -13,8 +13,6 @@ const schema = Joi.object({
 })
 
 export async function POST(request:NextRequest){
-    const contentType = request.headers.get("Content-type")
-    console.log(contentType)
     const formData = await request.formData()
 
     const data = {

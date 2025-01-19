@@ -33,6 +33,7 @@ export async function POST(request:NextRequest){
 
     try {
         const hashedPassword = hashData(value.password)
+        console.log(value)
 
         const user = await prisma.user.create({
             data: {
@@ -54,6 +55,7 @@ export async function POST(request:NextRequest){
             user: {name: user.name, email: user.email}
         })
     }catch(error) {
+        console.log(error)
         return createJsonResponse("Internal server error.",500)
     }
 }
