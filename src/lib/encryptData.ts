@@ -5,15 +5,17 @@ function generateSalt(length:number=16) {
 }
 
 
-export const hashData = (data:string, salt:string=generateSalt()) => {
+export const hashData = (data:string, salt:() => string=generateSalt) => {
     const algorithm = process.env.HASH_ALGORITHM
     console.log(algorithm)
     
     if (!algorithm) {
         throw new Error("Invalid algorithm")
     }
-    const hash = createHash(algorithm).update(salt + data).digest('base64')
-    return `${salt}:${hash}`
+    
+    const salt_string = salt()
+    const hash = createHash(algorithm).update(salt_string + data).digest('base64')
+    return `${salt_string}:${hash}`
 }
 
 
@@ -33,7 +35,7 @@ export const validateHash = (data:string, hash:string) => {
     }
     const [salt, hashValue] = hashGeneratedData
 
-    const dataHashed = hashData(data, salt)
+    const dataHashed = hashData(data, () => salt)
     if (dataHashed == hash) {return dataHashed}
     return null
 }

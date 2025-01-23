@@ -1,8 +1,3 @@
-/**
- * For a detailed explanation regarding each configuration property, visit:
- * https://jestjs.io/docs/configuration
- */
-
 import type {Config} from 'jest';
 import nextJest from "next/jest.js"
 
@@ -14,7 +9,11 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageProvider: "v8",
-  testEnvironment: "node"
+  testEnvironment: "jsdom",
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  testPathIgnorePatterns: ['<rootDir>/__tests__/api']
 };
 
 export default createJestConfig(config);

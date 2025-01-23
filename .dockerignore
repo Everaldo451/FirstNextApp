@@ -1,8 +1,8 @@
-/node_modules
-/.next
+node_modules/
+.next/
 next-env.d.ts
-/__tests__
+__tests__/
 
 .env*
 !.env.production
-jest.config.ts
+jest.*
