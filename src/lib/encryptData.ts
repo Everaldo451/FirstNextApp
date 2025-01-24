@@ -7,7 +7,6 @@ function generateSalt(length:number=16) {
 
 export const hashData = (data:string, salt:() => string=generateSalt) => {
     const algorithm = process.env.HASH_ALGORITHM
-    console.log(algorithm)
     
     if (!algorithm) {
         throw new Error("Invalid algorithm")

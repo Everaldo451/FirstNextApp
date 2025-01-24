@@ -20,33 +20,59 @@ import { prisma } from "@/lib/db";
 import { hashData } from "@/lib/encryptData";
 import { cookies } from "next/headers";
 
-
-it("successfull login",async () => {
-
-    const data = {
+describe("Authentication login", () => {
+    const commonData = {
         email: "other@gmail.com",
-        password: "any password",
-    };
+        password: "Mypas12!",
+    }
 
-    (prisma.user.findFirst as jest.Mock).mockResolvedValue({
-        id:1,
-        email:data.email,
-        password: hashData(data.password)
+    function createFormData(data:{[key:string]:any}) {
+        const formData = new FormData()
+        for (const [key, value] of Object.entries(data)) {
+            formData.append(key, value)
+        }
+        return formData
+    }
+
+    function configurePrismaMock(data:{[key:string]:any}) {
+        (prisma.user.findFirst as jest.Mock).mockResolvedValue({
+            id:1,
+            email:data.email,
+            password: hashData(data.password)
+        })
+    }
+
+    test("successfull",async () => {
+
+        const data = {...commonData}
+        const formData = createFormData(data);
+        configurePrismaMock(data)
+
+        const requestObj: NextRequest = {
+            formData: async () => formData,
+        }as any
+
+        const response = await POST(requestObj)
+        const body = await response.json()
+
+        expect(response.status).toBe(200)
+        expect(body).toHaveProperty("user")
+        expect(body.user.email).toBe(data.email)
     })
 
-    const formData = new FormData()
+    test("invalid password",async () => {
 
-    formData.append("email",data.email);
-    formData.append("password",data.password);
+        const data = {...commonData, password:"abc"}
+        const formData = createFormData(data);
+        configurePrismaMock(data)
 
-    const requestObj: NextRequest = {
-        formData: async () => formData,
-    }as any
+        const requestObj: NextRequest = {
+            formData: async () => formData,
+        }as any
 
-    const response = await POST(requestObj)
-    const body = await response.json()
+        const response = await POST(requestObj)
+        const body = await response.json()
 
-    expect(response.status).toBe(200)
-    expect(body).toHaveProperty("user")
-    expect(body.user.email).toBe(data.email)
+        expect(response.status).toBe(400)
+    })
 })

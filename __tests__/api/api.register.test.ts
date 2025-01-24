@@ -19,34 +19,60 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 
-
-it("successfull register",async () => {
-
-    const formData = new FormData()
-
-    const data = {
+describe("Authentication register", () => {
+    const commonData = {
         id:1,
         email: "example@gmail.com",
         name: "Example",
-        password: "any password",
+        password: "Mypas12?",
         birthday: new Date().toISOString()
     }
 
-    formData.append("email",data.email);
-    formData.append("name",data.name);
-    formData.append("password",data.password);
-    formData.append("birthday",data.birthday);
+    function createFormData(data:{[key:string]:any}) {
+        const formData = new FormData()
+        for (const [key, value] of Object.entries(data)) {
+            formData.append(key, value)
+        }
+        return formData
+    }
 
-    (prisma.user.create as jest.Mock).mockResolvedValue(data)
+    function configurePrismaMock(data:{[key:string]:any}) {
+        (prisma.user.create as jest.Mock).mockResolvedValue(data)
+    }
 
-    const requestObj: NextRequest = {
-        formData: async () => formData
-    } as any
+    test("successfull",async () => {
 
-    const response = await POST(requestObj)
-    const body = await response.json()
+        const data = {...commonData}
+        const formData = createFormData(data);
+        configurePrismaMock(data)
 
-    expect(response.status).toBe(200)
-    expect(body).toHaveProperty("user")
-    expect(body.user.email).toBe(data.email)
+        const requestObj: NextRequest = {
+            formData: async () => formData
+        } as any
+
+        const response = await POST(requestObj)
+        const body = await response.json()
+
+        expect(response.status).toBe(200)
+        expect(body).toHaveProperty("user")
+        expect(body.user.email).toBe(data.email)
+    })
+
+    test("invalid password",async () => {
+
+        const data = {...commonData, password: "abc"}
+        const formData = createFormData(data)
+        configurePrismaMock(data)
+
+        const requestObj: NextRequest = {
+            formData: async () => formData
+        } as any
+
+        const response = await POST(requestObj)
+        const body = await response.json()
+
+        expect(response.status).toBe(400)
+        expect(body).toHaveProperty("message")
+        expect(body.message).toBe("Invalid credentials.")
+    })
 })

@@ -202,8 +202,9 @@ class JWTService {
 
     async getIdentity(request:NextRequest, location:tokenLocation="header", refresh:boolean=false) {
         const jwt = await this.validateRequest(request, location, refresh)
+        if (!jwt) {return null}
 
-        return !jwt?null:Number(jwt.sub)
+        return Number(jwt)
     }
 }
 

@@ -6,11 +6,19 @@ import { cookies } from "next/headers";
 import Joi from "joi";
 import createJsonResponse from "@/lib/createResponse";
 import JWT from "@/services/JWTService";
+import { passwordRegex } from "../regex";
 
 const schema = Joi.object({
-    name: Joi.string(),
-    email: Joi.string(),
-    password: Joi.string(),
+    name: Joi.string()
+        .min(5)
+    ,
+    email: Joi.string()
+        .email({maxDomainSegments:2})
+    ,
+    password: Joi.string()
+        .min(8)
+        .pattern(passwordRegex)
+    ,
     birthday: Joi.string()
 })
 

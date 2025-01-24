@@ -4,12 +4,16 @@ import Joi from "joi";
 import createJsonResponse from "@/lib/createResponse";
 import JWT from "@/services/JWTService";
 import loginUser from "@/lib/loginUser";
+import { passwordRegex } from "../regex";
 
 const schema = Joi.object({
-    name: Joi.string(),
-    email: Joi.string(),
-    password: Joi.string(),
-    birthday: Joi.string()
+    email: Joi.string()
+        .email({minDomainSegments:2})
+    ,
+    password: Joi.string()
+        .min(8)
+        .pattern(passwordRegex)
+    ,
 })
 
 export async function POST(request:NextRequest){
