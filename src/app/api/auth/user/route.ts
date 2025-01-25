@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/db";
-import JWT from "@/services/JWTService";
+import { getIdentity } from "@/services/JWTService";
 import { NextRequest } from "next/server";
 import createJsonResponse from "@/lib/createResponse";
 
 export async function GET(request:NextRequest) {
-    const identity = await JWT.getIdentity(request)
+    const identity = await getIdentity(request)
 
     if (!identity || isNaN(identity)) {
         return createJsonResponse("Unauthorized", 401)

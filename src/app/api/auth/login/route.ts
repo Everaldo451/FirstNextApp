@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import Joi from "joi";
 import createJsonResponse from "@/lib/createResponse";
-import JWT from "@/services/JWTService";
+import { setAccessCookie, setRefreshCookie, setCSRFCookie, createCSRFToken } from "@/services/JWTService";
 import loginUser from "@/lib/loginUser";
 import { passwordRegex } from "../regex";
 
@@ -34,10 +34,10 @@ export async function POST(request:NextRequest){
         }
 
         const cookieStore = await cookies()
-        JWT.setAccessCookie(user.id, cookieStore)
-        JWT.setRefreshCookie(user.id, cookieStore)
-        JWT.setCSRFCookie(
-            JWT.createCSRFToken(),
+        setAccessCookie(user.id, cookieStore)
+        setRefreshCookie(user.id, cookieStore)
+        setCSRFCookie(
+            createCSRFToken(),
             cookieStore
         )
         
