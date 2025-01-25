@@ -1,19 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, NextPageContext } from "next";
+import { useRouter } from "next/router";
 import { Geist, Geist_Mono } from "next/font/google";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import App from "./_components/App";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,11 +14,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html>
+      <head>
+        <meta name="author" content="Everaldo451"/>
+      </head>
+      <body>
         <App>
-          {children}
+        {children}
         </App>
       </body>
     </html>
