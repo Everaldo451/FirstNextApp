@@ -1,6 +1,20 @@
 const cookieStore:{[key:string]:[string, {[key:string]:any}|undefined]} = {}
 const headerStore:Headers = new Headers()
 
+afterEach(() => {
+    headerStore.forEach((value,key) => {
+        headerStore.delete(key)
+    })
+
+    headerStore.forEach((value,key) => {
+        console.log(key, value)
+    })
+
+    for (const key of Object.keys(cookieStore)) {
+        delete cookieStore[key]
+    }
+})
+
 jest.mock("next/headers", () => ({
     cookies: jest.fn().mockResolvedValue({
         set: jest.fn(
@@ -43,7 +57,6 @@ describe("User Get", () => {
 
     test("successfull", async () => {
         const requestCookies = await cookies()
-        const requestHeaders = await headers()
 
         setAccessCookie(1, requestCookies)
         setCSRFCookie(createCSRFToken(), requestCookies)
@@ -51,11 +64,9 @@ describe("User Get", () => {
         const csrfToken = requestCookies.get(config.c.csrfOptions.cookieName)
 
         if (accessToken) {
-            console.log(accessToken.value)
             headerStore.append(config.c.headerOptions.tokenHeaderName, accessToken.value)
         }
         if (csrfToken) {
-            console.log(csrfToken.value)
             headerStore.append(config.c.csrfOptions.headerName, csrfToken.value)
         }
 
@@ -66,5 +77,30 @@ describe("User Get", () => {
         const body = await response.json()
 
         expect(response.status).toBe(200)
+        expect(body).toHaveProperty("user")
+        expect(body.user.name).toBe("Algum Nome")
+        expect(body.user.email).toBe("algum@gmail.com")
+    })
+
+    test("invalid token", async () => {
+        const requestCookies = await cookies()
+
+        setAccessCookie(1, requestCookies)
+        setCSRFCookie(createCSRFToken(), requestCookies)
+        const accessToken = requestCookies.get(config.c.accessTokenOptions.cookieOptions.cookieName)
+        
+        if (accessToken) {
+            headerStore.append(config.c.headerOptions.tokenHeaderName, accessToken.value)
+        }
+
+        const requestObj:NextRequest = {
+        } as any
+
+        const response = await GET(requestObj)
+        const body = await response.json()
+
+        expect(response.status).toBe(400)
+        expect(body).toHaveProperty("message")
+        expect(body.message).toBe("Missing CSRF token.")
     })
 })

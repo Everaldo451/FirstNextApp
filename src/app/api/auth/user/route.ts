@@ -4,15 +4,18 @@ import { NextRequest } from "next/server";
 import createJsonResponse from "@/lib/createResponse";
 
 export async function GET(request:NextRequest) {
-    const identity = await getIdentity(request)
+    const identityOrError = await getIdentity(request)
 
-    if (!identity || isNaN(identity)) {
+    if (identityOrError instanceof Error) {
+        return createJsonResponse(identityOrError.message, 400)
+    }
+    if (!identityOrError || isNaN(identityOrError)) {
         return createJsonResponse("Unauthorized", 401)
     }
 
     try {
         const user = await prisma.user.findUnique({
-            where: {id: identity}
+            where: {id: identityOrError}
         })
 
         if (!user) {return createJsonResponse("Unauthorized", 401)}

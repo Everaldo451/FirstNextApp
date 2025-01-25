@@ -36,8 +36,9 @@ interface JWTServiceConfig {
     csrfOptions:csrfOptions
 }
 
-type decodedToken = jwt.JwtPayload|null
+type decodedToken = jwt.JwtPayload
 type tokenLocation = "cookie"|"header"
+type tokenError = jwt.VerifyErrors|Error|null
 
 class Config {
     private secretKey:jwt.Secret;
@@ -162,28 +163,36 @@ export function setCSRFCookie(csrfToken:string, cookieStore:ReadonlyRequestCooki
     })
 }
 
-export function validateJWT(token:string, tokenOptions:tokenOptions):decodedToken {
+export function validateJWT(token:string, tokenOptions:tokenOptions):[decodedToken, tokenError] {
     const verifyOptions:jwt.VerifyOptions = {
-        clockTimestamp: Date.now(),
+        clockTimestamp: Date.now()/1000,
     }
 
     const algorithm = config.getAlgorithm()
     if (algorithm) {verifyOptions.algorithms?.push(algorithm)}
 
-    try {
-        const decoded = jwt.verify(token, config.getSecretKey(), verifyOptions)
+    let jwtToken:decodedToken={};
+    let jwtError:tokenError=null
 
+    jwt.verify(token, config.getSecretKey(), verifyOptions, (error, decoded) => {
+        if (error) {
+            jwtError=error
+            return
+        }
         if (typeof decoded !== "object" || !("sub" in decoded)) {
-            throw new Error("Internal Error")
+            jwtError=new Error("Internal Error")
+            return
+        }
+    
+        if (!decoded.token_type||decoded.token_type!==tokenOptions.type) {
+            jwtError=new Error("Invalid token type.")
+            return
         }
 
-        if (!decoded.token_type||decoded.token_type!==tokenOptions.type) {
-            throw new Error("Invalid token type.")
-        }
-        return decoded as jwt.JwtPayload
-    } catch(error) {
-        return null
-    }
+        jwtToken=decoded as jwt.JwtPayload
+    })
+
+    return [jwtToken, jwtError]
 }
 
 export function validateCSRFToken(csrfToken:string, cookieStore:ReadonlyRequestCookies):string|null {
@@ -198,30 +207,35 @@ export async function validateRequest(request:NextRequest, location:tokenLocatio
     const header = await headers()
 
     const csrfTokenInHeader = header.get(config.c.csrfOptions.headerName)
-    if (!csrfTokenInHeader) {return null}
+    if (!csrfTokenInHeader) {return new Error("Missing CSRF token.")}
 
     const csrfToken = validateCSRFToken(csrfTokenInHeader, cookieStore)
-    if (!csrfToken) {return null}
+    if (!csrfToken) {return new Error("Invalid CSRF token.")}
 
     const tokenOptions = refresh?config.c.refreshTokenOptions:config.c.accessTokenOptions
 
+    let jwToken, error;
+
     if (location=="header") {
         const jwtInHeader = header.get(config.c.headerOptions.tokenHeaderName)
-        if (!jwtInHeader) {return null}
+        if (!jwtInHeader) {return new Error("Missing access token.")}
 
-        return validateJWT(jwtInHeader, tokenOptions)
+        [jwToken, error] = validateJWT(jwtInHeader, tokenOptions)
     } else {
         const jwtInCookie = cookieStore.get(tokenOptions.cookieOptions.cookieName)
-        if (!jwtInCookie) {return null}
+        if (!jwtInCookie) {return new Error("Missing access token.")}
 
-        return validateJWT(jwtInCookie.value, tokenOptions)
+        [jwToken, error] = validateJWT(jwtInCookie.value, tokenOptions)
     }
+    if (error) {return error}
+    return jwToken
 }
 
 export async function getIdentity(request:NextRequest, location:tokenLocation="header", refresh:boolean=false) {
-    const jwt = await validateRequest(request, location, refresh)
-    if (!jwt) {return null}
-
-    return Number(jwt.sub)
+    const jwtOrError = await validateRequest(request, location, refresh)
+    if (jwtOrError instanceof Error) {
+        return jwtOrError
+    }
+    return Number(jwtOrError.sub)
 }
 
