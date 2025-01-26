@@ -1,4 +1,4 @@
-import PostComponent from "./_components/Post"
+import PostComponent from "../_components/Post"
 import { Post } from "@prisma/client"
 
 export default async function PageRoute() {

@@ -1,0 +1,11 @@
+div.Main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+div.postCatalog {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 50%;
+}

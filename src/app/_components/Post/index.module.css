@@ -1,0 +1,25 @@
+section.Post{
+    display: flex;
+    flex-direction: column;
+    color: black;
+    background-color: white;
+    padding: 20px;
+    font-family: var(--headerFontFamily);
+}
+
+section.Post:nth-child(n+1) {
+    margin-top: 20px;
+}
+
+section.Post h3 {
+    margin: 0;
+}
+
+section.Post span.date {
+    margin: 0;
+    font-size: 12px;
+}
+
+section.Post p.content {
+    margin: 20px 0 10px 0;
+}

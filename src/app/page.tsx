@@ -1,18 +1,48 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use server'
+
 import { UserContext } from "@/contexts/UserContext";
+import {Post} from "@prisma/client";
+import PostCatalog from "./_components/PostCatalog";
+import styles from "./page.module.css";
 
-export default async function Home() {
-  const response = await fetch("http://localhost:3000/api/auth/user")
-  const json = await response.json()
+export async function getPosts():Promise<Post[]> {
 
-  if (response.ok && json.user) {
-    console.log(json.user)
+  const response = await fetch("/api/post")
+  const body = await response.json()
+
+  if (!body.posts || !(body.posts satisfies Post[])) {
+    return []
   }
+  return body.posts
+
+}
+
+export default async function Home(){
+
+  const initialPosts = [
+    {
+      id:1,
+      authorId:1,
+      title: "first_post",
+      content: `Este é o conteúdo deste post simulado que vai servir
+      para teste`,
+      createdAt: new Date(Date.now() - 60*60*24*1000*3)
+    },
+    {
+      id:2,
+      authorId:1,
+      title: "second_post",
+      content: `Este é o conteúdo deste segundo post simulado que vai servir
+      para teste do segundo post`,
+      createdAt: new Date(Date.now() - 60*60*24*1000*8)
+    },
+  ]
 
   return (
-    <div className={styles.page}>
-      
+    <div className={styles.Main}>
+      <div className={styles.postCatalog}>
+        <PostCatalog initialPosts={initialPosts}/>
+      </div>
     </div>
   );
 }
